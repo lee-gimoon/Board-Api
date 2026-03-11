@@ -7,7 +7,7 @@ spring:
     # localhost:5432 뒤의 'board_db'는 실제 생성한 DB 이름이어야 합니다.
     url: jdbc:postgresql://localhost:5432/board_db
     username: postgres        # 설치 시 설정한 사용자명 (기본값: postgres)
-    password: your_password   # 설치 시 설정한 비밀번호
+    password: 1234  # 설치 시 설정한 비밀번호
     driver-class-name: org.postgresql.Driver
 
   # 2. JPA(ORm) 설정

@@ -2,9 +2,9 @@ src/main/java/com/board/api
 │
 ├── global                          # 1. 전역 설정 및 공통 컴포넌트
 │   ├── config                      # 보안, Swagger, JPA 등 각종 설정 클래스
-│   │   ├── SecurityConfig.java
+│   │   ├── SecurityConfig.java     # SecurityFilterChain 및 권한 설정
 │   │   ├── SwaggerConfig.java
-│   │   └── JpaAuditConfig.java
+│   │   └── JpaAuditConfig.java     # JPA 시간 자동화 활성화
 │   ├── common                      # 공통 응답, 유틸리티, 공통 상속용 엔티티
 │   │   ├── BaseTimeEntity.java     # 모든 테이블의 생성/수정 시간 공통 처리
 │   │   └── ApiResponse.java        # 통일된 JSON 응답 규격
@@ -12,8 +12,10 @@ src/main/java/com/board/api
 │   │   ├── GlobalExceptionHandler.java
 │   │   └── ErrorCode.java
 │   └── security                    # 인증/인가 핵심 로직 (JWT 관련)
-│       ├── JwtProvider.java
-│       └── JwtAuthenticationFilter.java
+│       ├── PrincipalDetails.java         # 시큐리티가 이해하는 회원 정보 객체
+│       ├── CustomUserDetailsService.java # DB에서 회원을 찾는 서비스
+│       ├── JwtProvider.java              # JWT 토큰 생성/검증
+│       └── JwtAuthenticationFilter.java  # 요청마다 JWT 토큰을 확인하는 필터
 │
 └── domain                          # 2. 비즈니스 핵심 도메인 (기능별)
     │
