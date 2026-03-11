@@ -1,3 +1,21 @@
 spring:
   application:
     name: board-api
+
+  # 1. PostgreSQL 연결 정보
+  datasource:
+    # localhost:5432 뒤의 'board_db'는 실제 생성한 DB 이름이어야 합니다.
+    url: jdbc:postgresql://localhost:5432/board_db
+    username: postgres        # 설치 시 설정한 사용자명 (기본값: postgres)
+    password: your_password   # 설치 시 설정한 비밀번호
+    driver-class-name: org.postgresql.Driver
+
+  # 2. JPA(ORm) 설정
+  jpa:
+    hibernate:
+      ddl-auto: update        # 자바 코드(Entity)를 바탕으로 테이블을 자동 생성/수정
+    show-sql: true            # 콘솔에 SQL 로그 출력
+    properties:
+      hibernate:
+        format_sql: true      # SQL 로그를 보기 좋게 정렬
+        dialect: org.hibernate.dialect.PostgreSQLDialect # PostgreSQL 전용 문법 사용
