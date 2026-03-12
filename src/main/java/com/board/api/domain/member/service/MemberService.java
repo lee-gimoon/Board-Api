@@ -4,7 +4,9 @@ package com.board.api.domain.member.service;
 
 import com.board.api.domain.member.entity.Member;
 import com.board.api.domain.member.repository.MemberRepository;
+import com.board.api.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,14 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
     private final MemberRepository memberRepository;
 
+    // [추가됨] SecurityConfig에서 만든 암호화 도구를 스프링이 알아서 주입(Injection)해 줍니다.
+    private final PasswordEncoder passwordEncoder;
+    // [추가] 스프링이 알아서 주입해 줍니다.
+    private final JwtProvider jwtProvider;
+
     // 회원가입 로직.
     @Transactional // 데이터를 저장해야 하므로 읽기 전용을 해제합니다.
     public Long signup(String email, String password, String nickname) {
         // 1. 이메일 중복 체크 (우리가 Repository에 만든 메서드 사용!)
         validateDuplicateMember(email);
 
-        // 2. 비밀번호 암호화 (지금은 뼈대만 만들고, 나중에 Security 설정을 추가할 거예요)
-        String encodedPassword = password; // TODO: PasswordEncoder 사용 예정
+        // 2. [수정됨] 사용자가 입력한 평문 비밀번호(예: "1234")를 복호화 불가능한 외계어로 암호화합니다.
+        String encodedPassword = passwordEncoder.encode(password);
 
         // 3. 회원 객체 생성 및 저장
         Member member = Member.builder()
@@ -38,6 +45,25 @@ public class MemberService {
                 .build();
 
         return memberRepository.save(member).getId();
+    }
+
+    /**
+     * [추가된 로그인 로직]
+     * 이메일과 비밀번호를 확인한 뒤, 성공하면 JWT 토큰(문자열)을 반환합니다.
+     */
+    public String login(String email, String password) {
+        // 1. DB에서 이메일로 회원을 찾습니다. 없으면 에러 발생!
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 이메일입니다."));
+
+        // 2. 비밀번호가 일치하는지 확인합니다.
+        // passwordEncoder.matches(입력받은 비밀번호, DB에 암호화되어 저장된 비밀번호)
+        if (!passwordEncoder.matches(password, member.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        // 3. 이메일과 비밀번호가 모두 맞다면, 티켓 발급기를 돌려서 토큰을 만들어 줍니다!
+        return jwtProvider.createToken(member.getEmail());
     }
 
     private void validateDuplicateMember(String email) {
