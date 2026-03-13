@@ -24,7 +24,7 @@ src/main/java/com/board/api
     │   ├── service                 # MemberService.java
     │   ├── repository              # MemberRepository.java
     │   ├── entity                  # Member.java
-    │   └── dto                     # SignupRequest, LoginRequest 등
+    │   └── dto                     # SignupRequest, LoginRequest, MemberResponse 등
     │
     ├── post                        # [게시글 도메인]
     │   ├── controller              # PostController.java

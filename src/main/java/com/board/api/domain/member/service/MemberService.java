@@ -2,6 +2,7 @@ package com.board.api.domain.member.service;
 // 이제 프로젝트의 '총괄 매니저' 격인 서비스(Service) 계층을 만들 차례입니다.
 // 리포지토리가 "DB에서 데이터를 가져와!"라는 단순 심부름을 한다면, 서비스는 "가져온 데이터를 검사해보고, 비밀번호도 암호화하고, 문제가 없으면 저장해!"라는 실제 비즈니스 로직을 담당합니다.
 
+import com.board.api.domain.member.dto.MemberResponse;
 import com.board.api.domain.member.entity.Member;
 import com.board.api.domain.member.repository.MemberRepository;
 import com.board.api.global.security.JwtProvider;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * [핵심 포인트]
@@ -64,6 +67,13 @@ public class MemberService {
 
         // 3. 이메일과 비밀번호가 모두 맞다면, 티켓 발급기를 돌려서 토큰을 만들어 줍니다!
         return jwtProvider.createToken(member.getEmail());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MemberResponse> findAll() {
+        return memberRepository.findAll().stream() // DB에서 모든 멤버를 꺼내서
+                .map(MemberResponse::new)          // 하나씩 MemberResponse로 변환한 뒤
+                .toList();                         // 리스트로 묶어서 반환합니다.
     }
 
     private void validateDuplicateMember(String email) {

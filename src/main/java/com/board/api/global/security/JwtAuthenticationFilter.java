@@ -36,6 +36,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 1. 요청의 헤더(Header)에서 토큰표 꺼내기
         String token = resolveToken(request);
+        // [이 로그를 추가하세요]
+        log.info("추출된 토큰: {}", token);
+
+        if (token != null) {
+            log.info("토큰 검증 시작...");
+            // ... 생략
+        } else {
+            log.info("토큰이 없거나 형식이 잘못되어 통과시킴");
+        }
 
         try {
             // 2. 토큰이 존재한다면 검사 시작!

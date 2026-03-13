@@ -52,7 +52,14 @@ public class SecurityConfig {
                 // 4. 경로별 접근 권한 설정 (여기가 가장 중요합니다!)
                 .authorizeHttpRequests(auth -> auth
                         // 회원가입과 로그인 API는 신분증 없이도(permitAll) 누구나 접근할 수 있어야 합니다.
-                        .requestMatchers("/api/members/signup", "/api/members/login").permitAll()
+                        .requestMatchers("/api/members/signup", "/api/members/login", "/api/members").permitAll()
+
+                        // Swagger 관련 주소들을 모두 허용(permitAll) 목록에 추가합니다.
+                        .requestMatchers(
+                                "/v3/api-docs/**",    // Swagger가 만드는 API 명세 데이터(JSON)
+                                "/swagger-ui/**",     // Swagger UI 화면(HTML, JS, CSS)
+                                "/swagger-ui.html"    // Swagger 접속용 단축 주소
+                        ).permitAll()
 
                         // 그 외의 모든 요청(게시글 작성 등)은 반드시 인증(authenticated)을 거쳐야 합니다.
                         .anyRequest().authenticated()
@@ -75,4 +82,4 @@ public class SecurityConfig {
     }
 }
 
-// eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0QHRlc3QuY29tIiwiaWF0IjoxNzczMzI4MDg1LCJleHAiOjE3NzMzMzE2ODV9.Xbv0-GOu1ijf6wMMNfsxNqnmGIzyxgEGNVH-lDASMyA
+
