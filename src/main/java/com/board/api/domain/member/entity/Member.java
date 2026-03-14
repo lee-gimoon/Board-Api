@@ -2,6 +2,7 @@ package com.board.api.domain.member.entity;
 // 실제 회원 정보를 담을 클래스를 만듭니다. BaseTimeEntity를 상속받습니다.
 
 import com.board.api.global.common.BaseTimeEntity;
+// JPA가 "표준 규격"이라고 하면 뭔가 거창한 문서처럼 느껴지지만, 개발자 입장에서 보는 실체는 jakarta.persistence 패키지 안에 들어있는 인터페이스와 어노테이션들의 모음입니다.
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
