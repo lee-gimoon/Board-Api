@@ -76,10 +76,12 @@ public class SecurityConfig {
      * 비밀번호를 안전하게 암호화해주는 도구입니다.
      * MemberService에서 passwordEncoder.encode(password) 할 때 이 녀석이 사용됩니다.
      */
-    @Bean
+    @Bean // 스프링에게 "이 메서드가 반환하는 객체를 네가 관리하는 **빈(Bean)**으로 등록해줘"라고 명령하는 것입니다.
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+    // PasswordEncoder	인터페이스 (추상화): "이 기계는 '비밀번호 처리기'라는 규격을 따라야 해"
+    // BCryptPasswordEncoder  실제 구현체 (알고리즘): "실제 기계는 가장 튼튼한 'BCrypt 모델'로 설치해"
 }
 
 

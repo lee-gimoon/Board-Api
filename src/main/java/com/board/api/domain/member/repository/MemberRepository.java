@@ -19,7 +19,7 @@ import java.util.Optional;
  * - Long: 그 엔티티의 @Id(PK) 타입
  */
 
-// Spring Data JPA -> JPA 인터페이스 -> Hibernate 구현체 순으로 호출되어 실행되는 구조입니다.
+// Spring Data JPA(최상위 래핑) -> JPA 인터페이스(표준화 래핑) -> Hibernate 구현체(실질적인 일꾼) 순으로 호출되어 실행되는 구조입니다.
 public interface MemberRepository extends JpaRepository<Member, Long> {
     // 이메일로 회원을 찾는 기능 추가
     // 이 메서드 이름을 보고 스프링이 "SELECT * FROM members WHERE email = ?" 쿼리를 자동으로 생성합니다.
@@ -32,8 +32,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 }
 
 // Spring Data JPA의 마법:
-// 인터페이스만 선언하면 스프링이 런타임에 이 인터페이스를 구현한
-// '동적 프록시(대리인) 객체'를 자동으로 생성하여 주입(DI)해줍니다.
+// 인터페이스만 선언하면 스프링이 런타임에 이 인터페이스를 구현한 '동적 프록시(대리인) 객체'를 자동으로 생성하여 주입(DI)해줍니다.
 // 프록시의 목적:	기능(로직) 자체를 자동 생성
 // 프록시 생성 여부: 무조건 생성
 // 결론: "스프링은 인터페이스만으로 객체를 만들 수 있는 능력이 있지만, 그 인터페이스가 어떤 표준(JPA 등)을 따르고 있거나,

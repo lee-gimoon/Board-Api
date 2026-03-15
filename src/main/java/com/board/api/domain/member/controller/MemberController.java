@@ -21,7 +21,7 @@ import java.util.List;
  * 2. @RequestMapping: 이 컨트롤러의 모든 주소는 "/api/members"로 시작합니다.
  */
 
-@RestController
+@RestController // @Controller + @ResponseBody. (@ResponseBody => **"내 메서드가 반환하는 값을 HTML 뷰(View)를 찾는 데 쓰지 말고, 바로 HTTP 응답 본문(Body)에 담아줘!"**라고 스프링에게 요청하는 신호)
 @RequestMapping("/api/members") // 공통 주소. @Target({ElementType.TYPE,ElementType.METHOD})
 @RequiredArgsConstructor
 public class MemberController {
@@ -33,7 +33,10 @@ public class MemberController {
      * POST http://localhost:8080/api/members/signup
      */
     @PostMapping("/signup") // POST 방식 전용 상세 주소. @Target({ElementType.METHOD})
-    public ResponseEntity<Long> signup(@RequestBody MemberSignupRequest request) {
+    // ResponseEntity는 스프링에서 제공하는 클래스로, HTTP 응답(Response) 전체를 나타내는 객체입니다.
+    // <Long> (제네릭): 이건 "응답 객체 안의 실제 알맹이(Body) 데이터는 Long 타입이야"라고 구체적으로 명시하는 것입니다.
+    // 회원가입이 끝나고 memberId를 돌려주기로 했으니, ID의 타입인 Long을 써준 것입니다.
+    public ResponseEntity<Long> signup(@RequestBody MemberSignupRequest request) { // @RequestBody는 이름 그대로 **"HTTP 요청 본문(Body)에 담긴 내용을 자바 객체로 변환해서 넣어달라"**고 스프링에게 부탁하는 어노테이션입니다.
         // 1. 서비스에 가입 요청을 보냄
         Long memberId = memberService.signup(
                 request.getEmail(),
@@ -42,7 +45,12 @@ public class MemberController {
         );
 
         // 2. 성공 시 생성된 회원 ID와 함께 200 OK 응답을 보냄
+        // ResponseEntity.ok()는 **"HTTP 상태 코드 200 OK"**를 의미하는 정적(static) 메서드입니다.
+        // 뒤에 따라오는 (memberId)는 이 응답의 **본문(Body)**에 해당 데이터를 실어 보내겠다는 뜻입니다.
         return ResponseEntity.ok(memberId);
+        // ResponseEntity.ok(memberId)를 리턴하면: ID를 품고 있는 '성공 응답 객체'를 새로 만들어서 반환하는 것입니다.
+        // 브라우저가 응답을 받자마자 **"상태 코드: 200"**을 보고 "아, 회원가입이 성공했구나!"라고 먼저 판단합니다.
+        // 그다음에 박스를 열어(Body를 확인해) "생성된 ID는 1이구나"라고 데이터를 꺼내 씁니다.
     }
 
     /**
