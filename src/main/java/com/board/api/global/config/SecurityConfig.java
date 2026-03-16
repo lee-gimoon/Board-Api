@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor; // [추가]
  * 1. @Configuration: 스프링이 켜질 때 이 클래스의 설정을 읽어갑니다.
  * 2. @EnableWebSecurity: 스프링 시큐리티의 모든 방어막(필터 체인)을 활성화합니다.
  */
-
+// 스프링 시큐리티의 **SecurityConfig는 컨트롤러에 도달하기 전 앞마당에 서 있는 '무서운 문지기(Filter)'**라고 생각하면 됩니다.
 @Configuration // 스프링 부트에게 "이 클래스는 단순한 코드가 아니라, 앱이 켜질 때 읽어야 하는 설정(도면) 파일이야"라고 알려줍니다.
 @EnableWebSecurity // "스프링 시큐리티의 기본 기능을 활성화하되, 내가 여기서 작성한 규칙들을 덮어씌워 줘"라는 스위치입니다.
 @RequiredArgsConstructor // 롬복(Lombok) 기능으로, final이 붙은 필드(jwtAuthenticationFilter)를 자동으로 연결(주입)해 주는 생성자를 몰래 만들어줍니다.
@@ -61,17 +61,22 @@ public class SecurityConfig {
                 // 4. 경로별 접근 권한 설정 (여기가 가장 중요합니다!)
                 // 람다식(auth -> auth.결정(...))을 사용해 URL 주소 매칭과 권한을 세팅합니다. 위에서부터 아래로 순서대로 적용됩니다.
                 .authorizeHttpRequests(auth -> auth
-                        // permitAll(): 로비 같은 곳입니다. 회원가입/로그인은 신분증(토큰)이 없는 사람도 들어와야 하니 프리패스를 줍니다. 개발용 API 명세서(Swagger)도 열어둡니다.
+                        // 1. 누구나 접근 가능한 구역 (로비)
+                        // 회원가입, 로그인 및 Swagger API 문서는 신분증(토큰) 없이 프리패스!
                         .requestMatchers("/api/members/signup", "/api/members/login", "/api/members").permitAll()
-
-                        // Swagger 관련 주소들을 모두 허용(permitAll) 목록에 추가합니다.
                         .requestMatchers(
-                                "/v3/api-docs/**",    // Swagger가 만드는 API 명세 데이터(JSON)
-                                "/swagger-ui/**",     // Swagger UI 화면(HTML, JS, CSS)
-                                "/swagger-ui.html"    // Swagger 접속용 단축 주소
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
                         ).permitAll()
 
-                        // 그 외의 모든 요청(게시글 작성 등)은 반드시 인증(authenticated)을 거쳐야 합니다.
+                        // 2. ⭐ [핵심 추가] 관리자 전용 구역 (VIP 룸)
+                        // 주의: URL 패턴을 적을 때 가장 좁고 구체적인 범위를 위쪽에 적어야 합니다.
+                        // 검문소 확인 (SecurityConfig.java): 사용자가 /api/admin/test 주소로 접속을 시도하면, SecurityConfig 문지기가 리스트를 봅니다. "어? /api/admin/** 패턴이네? 이건 검문 대상이야!"
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 3. 그 외의 모든 요청은 로그인(인증)된 사용자만 접근 가능
+                        // 일반 유저든 관리자든 일단 토큰이 유효해야 통과시킵니다.
                         .anyRequest().authenticated()
                 )
                 // 커스텀 필터(jwtAuthenticationFilter (내가 직접 로직을 창조함)) 끼워 넣기

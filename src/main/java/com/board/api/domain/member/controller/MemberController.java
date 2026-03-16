@@ -39,11 +39,8 @@ public class MemberController {
     // 회원가입이 끝나고 memberId를 돌려주기로 했으니, ID의 타입인 Long을 써준 것입니다.
     public ResponseEntity<Long> signup(@RequestBody MemberSignupRequest request) { // @RequestBody는 이름 그대로 **"HTTP 요청 본문(Body)에 담긴 내용을 자바 객체로 변환해서 넣어달라"**고 스프링에게 부탁하는 어노테이션입니다.
         // 1. 서비스에 가입 요청을 보냄
-        Long memberId = memberService.signup(
-                request.getEmail(),
-                request.getPassword(),
-                request.getNickname()
-        );
+        // 이제 요청에 adminKey="SECRET_KEY_1234!" 가 포함되어 있으면 관리자로 가입됩니다.
+        Long memberId = memberService.signup(request);
 
         // 2. 성공 시 생성된 회원 ID와 함께 200 OK 응답을 보냄
         // ResponseEntity.ok()는 **"HTTP 상태 코드 200 OK"**를 의미하는 정적(static) 메서드입니다.

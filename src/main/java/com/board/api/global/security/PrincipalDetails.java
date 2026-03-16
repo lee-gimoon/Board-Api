@@ -33,10 +33,12 @@ public class PrincipalDetails implements UserDetails {
         return member;
     }
 
-    // 1. 회원의 권한(Role)을 리턴합니다. (일단 모두 일반 유저로 설정)
+    // 1. 회원의 권한(Role)을 리턴합니다.
+    // Role_Authority.md 파일에 문법에 대한 설명 자세히 적어놈.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+        // member.getRole().getKey()는 "ROLE_USER" 또는 "ROLE_ADMIN"을 반환합니다.
+        return Collections.singletonList(new SimpleGrantedAuthority(member.getRole().getKey()));
     }
 
     // 2. 회원의 비밀번호를 리턴합니다.

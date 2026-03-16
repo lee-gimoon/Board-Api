@@ -20,7 +20,7 @@ src/main/java/com/board/api
 └── domain                          # 2. 비즈니스 핵심 도메인 (기능별)
     │
     ├── member                      # [회원 도메인]
-    │   ├── controller              # MemberController.java
+    │   ├── controller              # MemberController.java, AdminController.java
     │   ├── service                 # MemberService.java
     │   ├── repository              # MemberRepository.java
     │   ├── entity                  # Member.java, MemberRole.java

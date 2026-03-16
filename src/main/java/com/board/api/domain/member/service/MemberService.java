@@ -3,6 +3,7 @@ package com.board.api.domain.member.service;
 // 리포지토리가 "DB에서 데이터를 가져와!"라는 단순 심부름을 한다면, 서비스는 "가져온 데이터를 검사해보고, 비밀번호도 암호화하고, 문제가 없으면 저장해!"라는 실제 비즈니스 로직을 담당합니다.
 
 import com.board.api.domain.member.dto.MemberResponse;
+import com.board.api.domain.member.dto.MemberSignupRequest;
 import com.board.api.domain.member.entity.Member;
 import com.board.api.domain.member.entity.MemberRole;
 import com.board.api.domain.member.repository.MemberRepository;
@@ -37,21 +38,32 @@ public class MemberService {
     // [추가] 스프링이 알아서 주입해 줍니다.
     private final JwtProvider jwtProvider;
 
+    private static final String ADMIN_TOKEN = "SECRET_KEY_1234!"; // 실제 서비스에선 환경변수(yaml)로 빼는 것이 좋습니다.
+
     // 회원가입 로직.
     // 스프링에서 @Transactional이 붙은 메서드가 있다면, 스프링은 그 객체를 그대로 사용하는 게 아니라 겉을 감싸는 **'가짜 객체(Proxy)'**를 만들어냅니다.
     @Transactional // 데이터를 저장해야 하므로 읽기 전용을 해제합니다. (메서드 위에 그냥 @Transactional을 다시 붙여서 **"이 메서드는 읽기 전용이 아니야!"**라고 덮어쓰기(Override)를 해줘야 합니다.)
-    public Long signup(String email, String password, String nickname) {
+    public Long signup(MemberSignupRequest request) {
         // 1. 이메일 중복 체크 (우리가 Repository에 만든 메서드 사용! .existsByEmail)
-        validateDuplicateMember(email);
+        validateDuplicateMember(request.getEmail());
 
         // 2. [수정됨] 사용자가 입력한 평문 비밀번호(예: "1234")를 복호화 불가능한 외계어로 암호화합니다.
-        String encodedPassword = passwordEncoder.encode(password);
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+
+        // 역할 결정 로직.
+        // 1. 일단 무조건 모든 가입자는 '일반 유저'라고 못을 박습니다.
+        MemberRole role = MemberRole.USER;
+        // 2. 만약 클라이언트가 보낸 비밀키가 존재하고, 그게 우리가 정한 키와 완벽히 똑같을 때만!
+        if (request.getAdminKey() != null && request.getAdminKey().equals("SECRET_KEY_1234!")) {
+            role = MemberRole.ADMIN; // 관리자로 승급시켜 줍니다.
+        }
 
         // 3. 회원 객체 생성 및 저장 (엔티티는 서비스 안에서만 생성되고 다뤄지는 게 안전합니다.)
         Member member = Member.builder()
-                .email(email)
+                .email(request.getEmail())
                 .password(encodedPassword)
-                .nickname(nickname)
+                .nickname(request.getNickname())
+                .role(role) // [추가] 이제 DB에 USER 또는 ADMIN이 저장됩니다.
                 .build();
 
         // 우리가 memberRepository.save()를 호출하면, 실제로는 스프링이 만든 레포지토리 프록시가 그 요청을 받아서 실제 DB에 저장하는 복잡한 JPA 코드(SimpleJpaRepository)를 대신 실행해 줍니다.

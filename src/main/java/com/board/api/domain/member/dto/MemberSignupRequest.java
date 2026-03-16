@@ -12,4 +12,8 @@ public class MemberSignupRequest {
     private String email;
     private String password;
     private String nickname;
+
+    // 관리자 가입용 비밀 키 (기본값 빈 문자열).
+    // 클라이언트가 JSON에 이 값을 안 넣으면 자동으로 null이 됩니다.
+    private String adminKey = "";
 }

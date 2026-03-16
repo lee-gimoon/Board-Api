@@ -34,12 +34,21 @@ public class Member extends BaseTimeEntity { // extends BaseTimeEntity: 이 한 
     @Column(nullable = false)
     private String nickname;
 
+    // 자바 세상에서는 MemberRole.USER라는 멋진 객체를 썼지만, 데이터베이스(DB)는 자바의 enum이 뭔지 모릅니다. DB는 오직 숫자, 문자, 날짜 같은 기본 데이터만 알죠.
+    // 그래서 JPA(자바와 DB의 통역사)에게 "이 enum 객체를 DB에 저장할 때 어떻게 글자나 숫자로 바꿔서 넣을지" 알려줘야 합니다. 그게 바로 @Enumerated입니다.
+    // @Enumerated(EnumType.STRING): DB에 0, 1 같은 숫자가 아니라 "USER", "ADMIN" 이라는 글자 그대로 저장하라는 뜻입니다.
+    // 숫자로 저장(ORDINAL)하면 나중에 Enum에 새로운 등급이 추가되어 순서가 밀렸을 때 DB 데이터가 전부 꼬이는 대참사가 발생할 수 있습니다.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MemberRole role;
+
     // 객체를 생성할 때 new Member("a@a.com", "123", "nick")처럼 순서에 의존하지 않고, Member.builder().email("a@a.com")...build()처럼 명확하고 안전하게 만들 수 있게 해줍니다.
     @Builder // 빌더 패턴을 사용하여 객체 생성을 안전하고 가독성 좋게 만듭니다.
     public Member(String email, String password, String nickname, MemberRole role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
+        this.role = role;
     }
 }//class
 
