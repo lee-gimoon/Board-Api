@@ -27,25 +27,20 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter { // 이 클래스를 상속받으면 **"사용자의 1번 요청당 이 인증 검사는 딱 1번만 실행한다"**는 것을 보장해 줍니다.
 
     private final JwtProvider jwtProvider;
     private final UserDetailsService userDetailsService;
 
+    // 본격적인 검문소: doFilterInternal 메서드. (여기가 핵심 로직이 실행되는 곳입니다.)
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1. 요청의 헤더(Header)에서 토큰표 꺼내기
+        // 1. 요청의 헤더(Header)에서 토큰표 꺼내기 (앞서 만든 resolveToken을 이용해 토큰을 꺼냅니다.)
         String token = resolveToken(request);
-        // [이 로그를 추가하세요]
         log.info("추출된 토큰: {}", token);
 
-        if (token != null) {
-            log.info("토큰 검증 시작...");
-            // ... 생략
-        } else {
-            log.info("토큰이 없거나 형식이 잘못되어 통과시킴");
-        }
-
+        // 토큰 해독 및 예외 처리 (try-catch):
+        // 토큰이 있다면 jwtProvider.getEmailFromToken(token)을 통해 봉인을 풀고 안에 적힌 이메일을 꺼냅니다.
         try {
             // 2. 토큰이 존재한다면 검사 시작!
             if (token != null) {
@@ -70,13 +65,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 3. 검사가 끝났으니 다음 필터(혹은 컨트롤러)로 요청을 넘겨줍니다.
+        // 이 코드의 역할: "다음 검문소로 이동"
+        // filterChain.doFilter(request, response)를 호출하는 순간, 현재 필터에서의 작업은 일단락되고 다음 순서의 필터로 제어권이 넘어갑니다.
+        // 만약 현재 필터가 마지막 필터라면? 그때 비로소 우리가 만든 **컨트롤러(API)**로 요청이 전달됩니다.
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * HTTP 요청 헤더에서 토큰만 쏙 빼오는 유틸리티 메서드입니다.
-     * 국제 표준 규칙: "Authorization: Bearer <토큰문자열>" 형태로 들어옵니다.
-     */
+    // 입장권 확인 준비: resolveToken 메서드
+    // resolveToken 메서드는 헤더에서 Authorization이라는 이름의 칸을 찾습니다.
+    // 값이 비어있지 않고, "Bearer " (뒤에 띄어쓰기 1칸 포함)로 시작한다면, 앞에 "Bearer " 7글자를 싹둑 잘라내고 뒤에 있는 순수 JWT 문자열만 추출합니다.
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         // 헤더에 값이 있고, "Bearer "로 시작하는지 확인

@@ -4,6 +4,7 @@ package com.board.api.domain.member.service;
 
 import com.board.api.domain.member.dto.MemberResponse;
 import com.board.api.domain.member.entity.Member;
+import com.board.api.domain.member.entity.MemberRole;
 import com.board.api.domain.member.repository.MemberRepository;
 import com.board.api.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +72,7 @@ public class MemberService {
     public String login(String email, String password) {
         // 1. DB에서 이메일로 회원을 찾습니다. 없으면 에러 발생!
         Member member = memberRepository.findByEmail(email)
+                // .orElseThrow(): 값이 비어있을 경우(해당 이메일이 DB에 없을 경우) 즉시 예외를 던지는 간결한 문법입니다.
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 이메일입니다."));
 
         // 2. 비밀번호가 일치하는지 확인합니다.
@@ -81,14 +83,18 @@ public class MemberService {
 
         // 3. 이메일과 비밀번호가 모두 맞다면, 티켓 발급기를 돌려서 토큰을 만들어 줍니다!
         return jwtProvider.createToken(member.getEmail());
+        // 이제 서버는 이 사용자를 믿을 수 있습니다.
+        // 하지만 서버가 사용자의 상태를 계속 기억(Session)하는 대신, 사용자가 직접 증명서(JWT)를 들고 다니게 하는 Stateless(무상태) 방식을 선택한 것입니다.
     }
 
+    // 회원 목록 조회 로직.
     public List<MemberResponse> findAll() {
         return memberRepository.findAll().stream() // DB에서 모든 멤버를 꺼내서
                 .map(MemberResponse::new)          // 하나씩 MemberResponse로 변환한 뒤
                 .toList();                         // 리스트로 묶어서 반환합니다.
     }
 
+    // 이메일 중복 체크 로직.
     private void validateDuplicateMember(String email) {
         if (memberRepository.existsByEmail(email)) {
             throw new IllegalStateException("이미 존재하는 이메일입니다.");

@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -19,6 +20,7 @@ import java.util.Collections;
  * 1. UserDetails 인터페이스를 구현(implements)해야 시큐리티가 신분증으로 인정해줍니다.
  * 2. 내부에 우리가 만든 Member 객체를 품고(컴포지션) 있습니다.
  */
+// 우리의 Member 객체를 스프링 시큐리티가 찰떡같이 알아듣는 '표준 신분증 케이스(UserDetails)'에 담아 포장하는 역할을 합니다.
 public class PrincipalDetails implements UserDetails {
     private final Member member;
 
@@ -41,7 +43,7 @@ public class PrincipalDetails implements UserDetails {
     @Override
     public String getPassword() {
         return member.getPassword();
-    }
+    } // 비밀번호를 묻습니다. 알맹이인 member에서 꺼내서 줍니다.
 
     // 3. 회원의 아이디(우리는 이메일)를 리턴합니다.
     @Override
@@ -50,7 +52,7 @@ public class PrincipalDetails implements UserDetails {
     }
 
     // -- 아래 4개의 메서드는 계정의 상태를 나타냅니다. (지금은 모두 사용 가능(true)으로 설정 --
-
+    // 참고: 우리가 만드는 JWT 무상태(Stateless) 서버에서는 토큰 자체가 유효성을 증명하기 때문에, 이 4가지 상태 메서드들은 보통 이렇게 true로 놔두는 경우가 많습니다.
     @Override
     public boolean isAccountNonExpired() {
         return true; // 계정이 만료되지 않았는가?

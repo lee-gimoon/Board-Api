@@ -23,7 +23,7 @@ src/main/java/com/board/api
     │   ├── controller              # MemberController.java
     │   ├── service                 # MemberService.java
     │   ├── repository              # MemberRepository.java
-    │   ├── entity                  # Member.java
+    │   ├── entity                  # Member.java, MemberRole.java
     │   └── dto                     # SignupRequest, LoginRequest, MemberResponse 등
     │
     ├── post                        # [게시글 도메인]

@@ -36,7 +36,7 @@ public class Member extends BaseTimeEntity { // extends BaseTimeEntity: 이 한 
 
     // 객체를 생성할 때 new Member("a@a.com", "123", "nick")처럼 순서에 의존하지 않고, Member.builder().email("a@a.com")...build()처럼 명확하고 안전하게 만들 수 있게 해줍니다.
     @Builder // 빌더 패턴을 사용하여 객체 생성을 안전하고 가독성 좋게 만듭니다.
-    public Member(String email, String password, String nickname) {
+    public Member(String email, String password, String nickname, MemberRole role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;

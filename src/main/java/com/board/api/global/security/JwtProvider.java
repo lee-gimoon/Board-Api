@@ -22,13 +22,14 @@ import java.util.Date;
  * @Component: 스프링이 이 클래스를 관리하도록 빈(Bean)으로 등록합니다.
  * 필요할 때마다 의존성 주입(@RequiredArgsConstructor)으로 불러다 쓸 수 있습니다.
  */
-
+// 이 클래스를 스프링의 **빈(Bean)**으로 등록합니다.
+// 덕분에 MemberService나 JwtAuthenticationFilter에서 new JwtProvider()를 하지 않고도 @RequiredArgsConstructor를 통해 이 객체를 주입받아 사용할 수 있습니다.
 @Component
 public class JwtProvider {
     // 1. 서버만의 비밀 도장 (절대 외부에 유출되면 안 됩니다!)
     // 주의: HS256 알고리즘을 쓰려면 키 길이가 최소 32글자 이상이어야 합니다.
-    private final String secretKeyString = "my-super-secret-key-for-jwt-which-must-be-long-enough-12345";
-    private final Key secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());
+    private final String secretKeyString = "my-super-secret-key-for-jwt-which-must-be-long-enough-12345"; // 우리 서버만 알고 있는 **'비밀 도장'**입니다.
+    private final Key secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes()); // 단순한 문자열을 HMAC-SHA 알고리즘에 적합한 특수 열쇠 객체로 변환해 줍니다.
 
     // 2. 티켓 유효 시간 (예: 1시간 = 1000ms * 60초 * 60분)
     private final long tokenValidTime = 1000L * 60 * 60;
@@ -38,6 +39,7 @@ public class JwtProvider {
      */
     public String createToken(String email) {
         // 티켓에 들어갈 내용(Claims)을 셋팅합니다. (여기서는 이메일만 넣습니다)
+        // Payload(내용물): setSubject(email)를 통해 "이 티켓의 주인은 email을 가진 사용자다"라고 명시합니다.
         Claims claims = Jwts.claims().setSubject(email);
 
         Date now = new Date();
@@ -46,18 +48,20 @@ public class JwtProvider {
                 .setClaims(claims) // 정보 저장
                 .setIssuedAt(now)  // 티켓 발행 시간
                 .setExpiration(new Date(now.getTime() + tokenValidTime)) // 티켓 만료 시간
+                // Signature(서명/도장): **signWith**가 가장 중요합니다. 앞서 만든 secretKey로 내용물을 슥슥 문질러서 아무도 내용을 수정할 수 없도록 봉인합니다.
                 .signWith(secretKey, SignatureAlgorithm.HS256) // 비밀 도장 쾅!
-                .compact(); // 이 모든 걸 합쳐서 압축된 문자열로 만듦
+                .compact(); // 빌더에 입력된 헤더(Header), 내용(Payload), 서명(Signature)을 각각 Base64로 인코딩하고, 점(.)으로 연결하여 하나의 긴 문자열로 말아주는 과정을 수행합니다.
     }
 
     /**
      * 나중에 사용자가 티켓을 가져왔을 때, 티켓에서 이메일을 다시 읽어내는 메서드입니다.
      */
+    // getEmailFromToken: 티켓 검사하기 (매 요청 시)
     public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey) // 위조된 티켓인지 우리 도장으로 먼저 확인
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(token) // 티켓을 뜯어봅니다.
                 .getBody()
                 .getSubject(); // 아까 넣었던 이메일 꺼내기
     }

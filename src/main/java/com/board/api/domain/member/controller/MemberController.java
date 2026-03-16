@@ -4,6 +4,7 @@ package com.board.api.domain.member.controller;
 import com.board.api.domain.member.dto.MemberLoginRequest;
 import com.board.api.domain.member.dto.MemberResponse;
 import com.board.api.domain.member.dto.MemberSignupRequest;
+import com.board.api.domain.member.entity.MemberRole;
 import com.board.api.domain.member.service.MemberService;
 import com.board.api.global.security.PrincipalDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,7 +59,10 @@ public class MemberController {
      * POST http://localhost:8080/api/members/login
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody MemberLoginRequest request) {
+    // @RequestBody가 무엇인가요? 간단히 말하면 **"HTTP 요청의 본문(Body)에 담긴 JSON 데이터를 자바 객체로 변환해라"**라는 지시어입니다.
+    // 문법적으로 @RequestBody는 반드시 뒤에 **데이터를 담을 그릇(타입)**을 지정해줘야 합니다.
+    // 배경: 클라이언트(브라우저나 모바일 앱)가 로그인을 할 때, 보안과 데이터 구조를 위해 데이터를 URL 뒤에 붙이지 않고 HTTP Body에 담아 보냅니다.
+    public ResponseEntity<String> login(@RequestBody MemberLoginRequest request) { // 여기서 <String>은 응답 본문에 담길 데이터 타입이 문자열(JWT 토큰)임을 뜻합니다.
         // 1. 서비스에게 로그인 검증 및 토큰 발급을 맡깁니다.
         String token = memberService.login(request.getEmail(), request.getPassword());
 
